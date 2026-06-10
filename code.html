@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Distance | El alejamiento de las personas</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #ffffff;
+            color: #121414;
+            overflow-x: hidden;
+        }
+        .text-glow {
+            text-shadow: 0 0 15px rgba(18, 20, 20, 0.05);
+        }
+        .card-hover:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+        }
+        /* Rain Animation Styles */
+        #canvas-lluvia-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            background-color: #ffffff;
+        }
+        #rain {
+            display: block;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed-dim": "#474649",
+                      "on-error-container": "#410002",
+                      "surface-container": "#f1f1f1",
+                      "tertiary-container": "#e4e2e4",
+                      "inverse-on-surface": "#f1f0f0",
+                      "secondary-container": "#e5e2e3",
+                      "on-secondary-fixed": "#1b1b1c",
+                      "background": "#ffffff",
+                      "surface-container-high": "#e8e8e8",
+                      "on-primary-fixed": "#1c1b1b",
+                      "on-tertiary": "#ffffff",
+                      "outline-variant": "#c4c7c7",
+                      "error-container": "#ffdad6",
+                      "surface-tint": "#5f5e5e",
+                      "inverse-primary": "#c9c6c5",
+                      "secondary-fixed-dim": "#c8c6c7",
+                      "on-surface-variant": "#444748",
+                      "primary-fixed": "#e5e2e1",
+                      "on-surface": "#121414",
+                      "secondary-fixed": "#e5e2e3",
+                      "on-primary-container": "#1c1b1b",
+                      "error": "#ba1a1a",
+                      "inverse-surface": "#2f3131",
+                      "surface": "#ffffff",
+                      "on-background": "#121414",
+                      "on-secondary-fixed-variant": "#474647",
+                      "surface-bright": "#f9f9f9",
+                      "primary": "#121414",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed": "#1b1b1d",
+                      "primary-fixed-dim": "#c9c6c5",
+                      "secondary": "#5e5e5f",
+                      "on-error": "#ffffff",
+                      "on-secondary-container": "#1b1b1c",
+                      "outline": "#747878",
+                      "surface-dim": "#dedada",
+                      "on-tertiary-fixed-variant": "#474649",
+                      "primary-container": "#e5e2e1",
+                      "on-tertiary-container": "#1b1b1d",
+                      "surface-container-low": "#f7f7f7",
+                      "surface-container-highest": "#e2e2e2",
+                      "tertiary-fixed": "#e4e2e4",
+                      "surface-variant": "#dee3e3",
+                      "on-secondary": "#ffffff",
+                      "tertiary": "#5e5e60",
+                      "on-primary-fixed-variant": "#474646"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "section-gap": "160px",
+                      "margin-edge": "64px",
+                      "gutter": "32px",
+                      "container-max": "1140px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg-mobile": ["Playfair Display"],
+                      "headline-md": ["Playfair Display"],
+                      "headline-xl": ["Playfair Display"],
+                      "label-md": ["Inter"],
+                      "headline-lg": ["Playfair Display"]
+              },
+              "fontSize": {
+                      "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "300"}],
+                      "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "300"}],
+                      "headline-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "400"}],
+                      "headline-md": ["28px", {"lineHeight": "1.3", "fontWeight": "400"}],
+                      "headline-xl": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                      "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "500"}],
+                      "headline-lg": ["40px", {"lineHeight": "1.2", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="font-body-md text-body-md selection:bg-primary selection:text-on-primary bg-background text-on-background">
+<!-- Rain Background Canvas -->
+<div id="canvas-lluvia-container">
+<canvas id="rain"></canvas>
+</div>
+<header class="w-full top-0 sticky bg-background/80 backdrop-blur-md border-b border-outline-variant/20 z-50 transition-all duration-500 ease-in-out">
+<nav class="flex justify-between items-center px-margin-edge py-6 max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md text-on-background tracking-tighter">Presentación</div>
+<div class="hidden md:flex gap-gutter items-center">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#introduction">Introducción</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#causes">Causas</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#consequences">Consecuencias</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#recommendations">Sanación</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#conclusion">Conclusión</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors duration-300" href="#quote">Frase</a>
+</div>
+</nav>
+</header>
+<main class="relative z-10">
+<!-- Hero Title Section -->
+<section class="min-h-[70vh] flex items-center justify-center px-margin-edge py-section-gap bg-transparent">
+<div class="max-w-container-max mx-auto text-center">
+<h1 class="text-headline-xl font-headline-xl text-on-surface tracking-tighter leading-tight text-glow uppercase">
+                    EL ALEJAMIENTO <br/> DE LAS PERSONAS
+                </h1>
+</div>
+</section>
+<!-- Introduction Section -->
+<section class="max-w-container-max mx-auto px-margin-edge py-section-gap bg-transparent" id="introduction">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-center">
+<div class="md:col-span-6 flex flex-col gap-8">
+<div class="space-y-2">
+<span class="font-label-md text-label-md text-on-surface-variant tracking-widest uppercase block">Perspectiva</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface tracking-tighter leading-tight">Introducción</h2>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed max-w-lg">El alejamiento de las personas es una situación común que ocurre cuando familiares, amigos o conocidos se distancian emocional o físicamente. Este proceso puede darse por cambios personales, diferencias de opinión, falta de comunicación, conflictos o nuevas etapas de la vida. Comprender este fenómeno ayuda a fortalecer nuestras relaciones y a manejar de manera saludable las separaciones que pueden surgir.</p>
+</div>
+<div class="md:col-span-6 aspect-square overflow-hidden bg-surface-container-low border border-outline-variant/10 p-2 shadow-sm">
+<img alt="Cinematic workspace representing emotional distance" class="w-full h-full object-cover desaturate opacity-90" src="https://lh3.googleusercontent.com/aida/AP1WRLs3ohMNpECYELm3T3hYLGoAxu27wjjWVfrg9D28OjYiTZ1MiJcBoC32V3LfwTuVa06Uc9inU2h3oPAXM927a4fyaMyu6j1w0xiRzB9li0dswhJI81FDVfDMyC5nuLZV55OmwIezlpxPwzjjWrbzc6FRlWm945yI0ArbMwQ1TD508kGQ8HPIMVKVqfFJB8ahC8Wvha2bPbjfU2gaOIzmavrcNINQ_eECyRbNWoxsMpE8wVqDKf8kFxsVJaDq"/>
+</div>
+</div>
+</section>
+<!-- Causes Section -->
+<section class="bg-surface-container-lowest/40 border-y border-outline-variant/10 py-section-gap" id="causes">
+<div class="max-w-container-max mx-auto px-margin-edge">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-12">
+<div class="md:col-span-4 space-y-8">
+<div>
+<span class="font-label-md text-label-md text-on-surface-variant tracking-widest block mb-4 uppercase">Etiología</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Causas del Distanciamiento</h2>
+</div>
+<div class="aspect-square border border-outline-variant/20 p-2 bg-background shadow-sm">
+<img alt="Solitary person on bench" class="w-full h-full object-cover desaturate opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE5wcbnKTtfsaK8z0HOFQjDTrGSWl06np17_gTBx2MOBQbmnz34eh8tC1MkzxzRXKlWn_UuxHGPc71KY0yO44DuOuFBpWpE7CoZgpuVGd78fdrB-QjqpO8Kjtk5q3RmCxm3VMfb1rg2DzrX6Gp7AtYOCNkNHWffI9JoDaKMJf8DDPH7eoVm6LD5s2pXRGR_q9SXvqcnwGSM13bXldzgUxsm-xH8riTEBpG5XYRUS0GXI2WhWFGR4e6-Z09bbfF7br9OtMgJnib3CFpJDk"/>
+</div>
+</div>
+<div class="md:col-span-8 flex flex-col gap-6">
+<div class="bg-surface-container-low/60 p-10 border-l-2 border-primary/40 flex flex-col gap-4 card-hover shadow-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">Diferencias de Valores</h3>
+<p class="text-on-surface-variant leading-relaxed">Cuando los caminos éticos se bifurcan, el terreno común desaparece, haciendo imposible sostener el puente de la comunicación.</p>
+</div>
+<div class="bg-surface-container-low/60 p-10 border-l-2 border-primary/40 flex flex-col gap-4 card-hover shadow-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">Falta de Comunicación</h3>
+<p class="text-on-surface-variant leading-relaxed">El silencio no es solo ausencia de ruido; es un muro que se construye ladrillo a ladrillo con cada palabra no dicha.</p>
+</div>
+<div class="bg-surface-container-low/60 p-10 border-l-2 border-primary/40 flex flex-col gap-4 card-hover shadow-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">Cambios en el Estilo de Vida</h3>
+<p class="text-on-surface-variant leading-relaxed">La evolución personal a veces nos lleva a climas donde el otro ya no puede respirar con nosotros.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Consequences Section -->
+<section class="py-section-gap bg-transparent" id="consequences">
+<div class="max-w-container-max mx-auto px-margin-edge">
+<div class="flex flex-col md:flex-row items-baseline justify-between mb-20 border-b border-outline-variant/20 pb-10">
+<div class="space-y-2">
+<span class="font-label-md text-label-md text-on-surface-variant tracking-widest uppercase block">Impacto</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Consecuencias Emocionales</h2>
+</div>
+<span class="text-on-surface-variant italic font-body-md opacity-70">El peso de la ausencia</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-16">
+<div class="space-y-6">
+<div class="text-on-surface font-headline-xl opacity-5">01</div>
+<h4 class="font-headline-md text-on-surface text-[22px]">Sentimientos de Soledad</h4>
+<p class="text-on-surface-variant opacity-90 leading-relaxed font-body-md">Un vacío persistente que no se llena con compañía superficial, sino con la presencia de lo perdido.</p>
+</div>
+<div class="space-y-6">
+<div class="text-on-surface font-headline-xl opacity-5">02</div>
+<h4 class="font-headline-md text-on-surface text-[22px]">Tristeza y Melancolía</h4>
+<p class="text-on-surface-variant opacity-90 leading-relaxed font-body-md">El tinte grisáceo que adquiere el día a día cuando el recuerdo se vuelve más nítido que el presente.</p>
+</div>
+<div class="space-y-6">
+<div class="text-on-surface font-headline-xl opacity-5">03</div>
+<h4 class="font-headline-md text-on-surface text-[22px]">Crecimiento Personal</h4>
+<p class="text-on-surface-variant opacity-90 leading-relaxed font-body-md">Paradójicamente, la distancia obliga a la introspección, forjando una identidad más resiliente.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Recommendations Section -->
+<section class="bg-surface-container-low border-y border-outline-variant/10 py-section-gap" id="recommendations">
+<div class="max-w-container-max mx-auto px-margin-edge">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-6 flex flex-col justify-center py-10">
+<span class="font-label-md text-label-md text-on-surface-variant tracking-widest uppercase block mb-6">Sanación</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-12">Recomendaciones para Sanar</h2>
+<ul class="space-y-10">
+<li class="flex gap-6">
+<span class="material-symbols-outlined text-primary/80 text-3xl">chat_bubble</span>
+<div class="space-y-2">
+<h5 class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Comunicación Sincera</h5>
+<p class="text-on-surface-variant text-body-md leading-relaxed">Expresar opiniones y sentimientos de manera clara y cordial ayuda a prevenir conflictos y fortalecer la confianza.</p>
+</div>
+</li>
+<li class="flex gap-6">
+<span class="material-symbols-outlined text-primary/80 text-3xl">favorite</span>
+<div class="space-y-2">
+<h5 class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Empatía y Comprensión</h5>
+<p class="text-on-surface-variant text-body-md leading-relaxed">Ponerse en el lugar de la otra persona permite entender mejor sus emociones y necesidades.</p>
+</div>
+</li>
+<li class="flex gap-6">
+<span class="material-symbols-outlined text-primary/80 text-3xl">forum</span>
+<div class="space-y-2">
+<h5 class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Resolución mediante el diálogo</h5>
+<p class="text-on-surface-variant text-body-md leading-relaxed">Conversar de manera calmada y buscar soluciones en conjunto es la mejor forma de superar desacuerdos.</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="md:col-span-6 overflow-hidden border border-outline-variant/10 shadow-lg">
+<img alt="Hands reaching out" class="w-full h-full object-cover desaturate opacity-80 contrast-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhck4NwxlHD8WIHRbXk9wkcTb_7KJKCtsEDifFfyl1q18tz9Wc9n3Zk_Oslq_63yheLKeGBS7YRn3_8zqcy8-gfbzuw7oZMkmePyG2L-MtZfLmIEOuhSKpQEYvd9k9tWMEBUkkl7QEU6Mooey1c9NacNgzu8vOOb3h14hFGEE0XRwTSgoNY8ioq1TVMmX28tyuIYIIK1hYJ-nRa36xLIRIM8Rb1YoiBCXf34Hy94_iRVc-PegD0sga1cERTfWNUg96qrsijCCiM9FEWZs"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Conclusion Section -->
+<section class="py-section-gap bg-transparent" id="conclusion">
+<div class="max-w-3xl mx-auto px-margin-edge text-center space-y-12">
+<span class="font-label-md text-label-md text-on-surface-variant tracking-widest uppercase block">Síntesis</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Conclusión</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                    El alejamiento de las personas forma parte de la vida y puede ocurrir por diferentes motivos. Sin embargo, una buena comunicación, el respeto y la comprensión pueden ayudar a conservar relaciones saludables y afrontar de manera positiva los cambios que surgen en nuestras interacciones sociales.
+                </p>
+<div class="h-px w-24 bg-outline-variant mx-auto"></div>
+</div>
+</section>
+<!-- Reflection / Quote Section -->
+<section class="py-section-gap flex items-center justify-center text-center bg-transparent" id="quote">
+<div class="max-w-4xl px-margin-edge">
+<span class="material-symbols-outlined text-primary/10 text-6xl mb-12">format_quote</span>
+<blockquote class="font-headline-md italic text-headline-md text-on-surface leading-relaxed text-glow tracking-tight">
+                    "Algunas personas se alejan de nuestra vida, pero cada experiencia deja una enseñanza que nos ayuda a crecer."
+                </blockquote>
+<div class="mt-12 h-px w-24 bg-outline-variant mx-auto"></div>
+</div>
+</section>
+</main>
+<footer class="w-full bg-surface-container-lowest border-t border-outline-variant/20 relative z-10">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-edge py-20 max-w-container-max mx-auto">
+<div class="flex flex-col items-center md:items-start gap-4">
+<div class="font-headline-md text-headline-md text-on-surface">Distance</div>
+<p class="font-body-md text-body-md text-on-surface-variant opacity-70">© 2024 Distance. A study in solitude.</p>
+</div>
+<div class="flex gap-12 mt-10 md:mt-0 uppercase tracking-widest font-label-md text-[10px] text-on-surface-variant">
+<a class="hover:text-on-surface transition-colors" href="#">Privacy</a>
+<a class="hover:text-on-surface transition-colors" href="#">Archive</a>
+<a class="hover:text-on-surface transition-colors" href="#">Contact</a>
+</div>
+</div>
+</footer>
+<script>
+        // Header interaction script
+        document.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-4', 'bg-background/95');
+            } else {
+                header.classList.remove('py-4', 'bg-background/95');
+            }
+        });
+
+        // Rain Animation Script (Integrated from DOCUMENT_5)
+        const canvas = document.getElementById('rain');
+        const ctx = canvas.getContext('2d');
+        const drops = [];
+        const NUM = 220;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function randomDrop() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                len: Math.random() * 18 + 8,
+                speed: Math.random() * 6 + 5,
+                width: Math.random() * 1.2 + 0.3,
+                opacity: Math.random() * 0.25 + 0.05, // Slightly lower opacity for subtler integration
+                angle: Math.random() * 0.18 - 0.04
+            };
+        }
+
+        function init() {
+            drops.length = 0;
+            for (let i = 0; i < NUM; i++) {
+                const d = randomDrop();
+                d.y = Math.random() * canvas.height;
+                drops.push(d);
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#ffffff'; // White background as per theme
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < drops.length; i++) {
+                const d = drops[i];
+                ctx.save();
+                ctx.globalAlpha = d.opacity;
+                ctx.strokeStyle = '#000000'; // Black Rain
+                ctx.lineWidth = d.width;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                const dx = Math.sin(d.angle) * d.len;
+                ctx.moveTo(d.x, d.y);
+                ctx.lineTo(d.x + dx, d.y + d.len);
+                ctx.stroke();
+                ctx.restore();
+
+                d.y += d.speed;
+                d.x += Math.sin(d.angle) * d.speed * 0.3;
+
+                if (d.y > canvas.height + d.len) {
+                    drops[i] = randomDrop();
+                    drops[i].y = -drops[i].len;
+                }
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', () => { 
+            resize(); 
+            init(); 
+        });
+
+        resize();
+        init();
+        draw();
+    </script>
+</body></html>
